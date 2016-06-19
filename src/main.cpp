@@ -47,7 +47,7 @@ void displayMainMenu()
 			if (ImGui::MenuItem("Invert selection")) {}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_KI_JOYSTICK    " Commands"))
+		if (ImGui::BeginMenu(ICON_KI_GITHUB " Commands"))
 		{
 			if (ImGui::MenuItem("Find file", "ALT+F7")) {}
 			if (ImGui::MenuItem("History", "ALT+F8")) {}
