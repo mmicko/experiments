@@ -28,8 +28,8 @@ GENIE?=$(BX_DIR)/tools/bin/$(OS)/genie
 
 clean: ## Clean all intermediate files.
 	@echo Cleaning...
-	-@rm -rf .build
-	@mkdir .build
+	-@rm -rf build
+	@mkdir build
 
 projgen: ## Generate project files for all configurations.
 	$(GENIE) vs2015
