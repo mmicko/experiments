@@ -2,7 +2,6 @@
 #include "common.h"
 #include "bgfx_utils.h"
 #include "entry/cmd.h"
-#include "ocornut-imgui/imgui.h"
 #include "imgui/imgui.h" 
 
 void displayMainMenu()
@@ -30,7 +29,7 @@ void displayMainMenu()
 			if (ImGui::MenuItem("Change source")) {}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Files"))
+		if (ImGui::BeginMenu(ICON_FA_FILE " Files"))
 		{
 			if (ImGui::MenuItem("User menu", "F2")) {}
 			if (ImGui::MenuItem("View", "F3")) {}
@@ -48,7 +47,7 @@ void displayMainMenu()
 			if (ImGui::MenuItem("Invert selection")) {}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Commands"))
+		if (ImGui::BeginMenu(ICON_KI_JOYSTICK    " Commands"))
 		{
 			if (ImGui::MenuItem("Find file", "ALT+F7")) {}
 			if (ImGui::MenuItem("History", "ALT+F8")) {}
