@@ -19,7 +19,7 @@ newoption {
 }
 
 
-solution "retroCommander"
+solution "experiments"
 	configurations {
 		"Debug",
 		"Release",
@@ -39,7 +39,7 @@ solution "retroCommander"
 	end
 
 	language "C++"
-	startproject "retroCommander"
+	startproject "experiments"
 
 MODULE_DIR = path.getabsolute("../")
 SRC_DIR = path.getabsolute("../src")
@@ -48,15 +48,6 @@ BX_DIR     = path.getabsolute("../3rdparty/bx")
 
 local BGFX_BUILD_DIR = path.join("../", "build")
 local BGFX_THIRD_PARTY_DIR = path.join(BGFX_DIR, "3rdparty")
-if not BX_DIR then
-	BX_DIR = path.getabsolute(path.join(BGFX_DIR, "../bx"))
-end
-
-if not os.isdir(BX_DIR) then
-	print("bx not found at " .. BX_DIR)
-	print("For more info see: https://bkaradzic.github.io/bgfx/build.html")
-	os.exit()
-end
 
 defines {
 	"BX_CONFIG_ENABLE_MSVC_LEVEL4_WARNINGS=1"
@@ -86,10 +77,10 @@ if _OPTIONS["with-profiler"] then
 	}
 end
 
-function retroCommander()
+function mainProject(name_)
 
-	project ("retroCommander")
-		uuid (os.uuid("retroCommander"))
+	project (name_)
+		uuid (os.uuid(name_))
 		kind "WindowedApp"
 
 	configuration {}
@@ -254,5 +245,5 @@ group "libs"
 bgfxProject("", "StaticLib", {})
 
 group "main"
-retroCommander()
+mainProject("experiments")
 

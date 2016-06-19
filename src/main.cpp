@@ -1,8 +1,3 @@
-/*
- * Copyright 2011-2016 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
- */
-
 #include <bx/uint32_t.h>
 #include "common.h"
 #include "bgfx_utils.h"
