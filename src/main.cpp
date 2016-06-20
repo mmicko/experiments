@@ -113,7 +113,7 @@ void mainapp::ShowExampleAppCustomNodeGraph()
 	draw_list->ChannelsSetCurrent(0); // Background
 
 	ImVec2 canvasSize = ImGui::GetWindowSize();
-	ImVec2 offset2 = ImGui::GetCursorPos();
+	ImVec2 offset2 = ImGui::GetCursorPos() - m_scrolling;
 	ImVec2 win_pos = ImGui::GetCursorScreenPos();
 	// Display grid
 	{
