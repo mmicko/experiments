@@ -12,6 +12,7 @@ public:
 	void init(int _argc, char** _argv) override;
 	virtual int shutdown() override;
 	bool update() override;
+	void ShowExampleAppCustomNodeGraph();
 
 	uint32_t m_width;
 	uint32_t m_height;
@@ -144,6 +145,18 @@ int mainapp::shutdown()
 
 	return 0;
 }
+void mainapp::ShowExampleAppCustomNodeGraph()
+{
+	ImGui::SetNextWindowPos(ImVec2(0, 24));
+	ImGui::SetNextWindowSize(ImVec2(float(m_width), float(m_height - 24)));
+	if (!ImGui::Begin("Window1", nullptr, ImVec2(float(m_width), float(m_height - 24)), 1.0f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar))
+	{
+		ImGui::End();
+		return;
+	}
+	ImGui::TestNodeGraphEditor();
+	ImGui::End();
+}
 
 bool mainapp::update()
 {
@@ -163,7 +176,7 @@ bool mainapp::update()
 		);
 
 		displayMainMenu();
-		ImGui::TestNodeGraphEditor();
+		ShowExampleAppCustomNodeGraph();
 		imguiEndFrame();
 		bgfx::frame();
 		return true;

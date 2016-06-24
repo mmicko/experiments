@@ -14,39 +14,6 @@ namespace ImGui {
 		if (changed) color = ImColor(tmp);
 		return changed;
 	}
-	bool NodeGraphEditor::Style::Edit(NodeGraphEditor::Style& s) {
-		bool changed = false; ImVec4 tmp;
-		const float dragSpeed = 0.5f;
-		const char prec[] = "%1.1f";
-		ImGui::PushID(&s);
-		changed |= ImGui::ColorEdit4("color_background", &s.color_background.x);
-		changed |= EditColorImU32("color_grid", s.color_grid);
-		changed |= ImGui::DragFloat("grid_line_width", &s.grid_line_width, dragSpeed, 1.f, 32.f, prec);
-		changed |= ImGui::DragFloat("grid_size", &s.grid_size, dragSpeed, 8.f, 512.f, prec);
-
-		changed |= EditColorImU32("color_node", s.color_node);
-		changed |= EditColorImU32("color_node_frame", s.color_node_frame);
-		changed |= EditColorImU32("color_node_selected", s.color_node_selected);
-		changed |= EditColorImU32("color_node_hovered", s.color_node_hovered);
-		changed |= ImGui::DragFloat("node_rounding", &s.node_rounding, dragSpeed, 0.f, 16.f, prec);
-		changed |= ImGui::DragFloat2("node_window_padding", &s.node_window_padding.x, dragSpeed, 0.f, 8.f, prec);
-
-		changed |= EditColorImU32("color_node_input_slots", s.color_node_input_slots);
-		changed |= EditColorImU32("color_node_output_slots", s.color_node_output_slots);
-		changed |= ImGui::DragFloat("node_slots_radius", &s.node_slots_radius, dragSpeed, 1.f, 10.f, prec);
-
-		changed |= EditColorImU32("color_link", s.color_link);
-		changed |= ImGui::DragFloat("link_line_width", &s.link_line_width, dragSpeed, 1.f, 6.f, prec);
-		changed |= ImGui::DragFloat("link_control_point_distance", &s.link_control_point_distance, dragSpeed, 10.f, 200.f, prec);
-		changed |= ImGui::DragInt("link_num_segments", &s.link_num_segments, dragSpeed, 0, 16);
-
-		changed |= ImGui::ColorEdit4("color_node_title", &s.color_node_title.x);
-		changed |= ImGui::ColorEdit4("color_node_input_slots_names", &s.color_node_input_slots_names.x);
-		changed |= ImGui::ColorEdit4("color_node_output_slots_names", &s.color_node_output_slots_names.x);
-
-		ImGui::PopID();
-		return changed;
-	}
 	void NodeGraphEditor::render()
 	{
 		if (!inited) inited = true;
