@@ -95,6 +95,8 @@ function mainProject(name_)
 
 	files {
 		path.join(SRC_DIR, "main.cpp"),
+		path.join(SRC_DIR, "imguinodegrapheditor.cpp"),
+		path.join(SRC_DIR, "imguinodegrapheditor.h"),
 	}
 
 	links {
