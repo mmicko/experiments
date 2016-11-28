@@ -43,8 +43,8 @@ solution "experiments"
 
 MODULE_DIR = path.getabsolute("../")
 SRC_DIR = path.getabsolute("../src")
-BGFX_DIR   = path.getabsolute("../3rdparty/bgfx")
-BX_DIR     = path.getabsolute("../3rdparty/bx")
+BGFX_DIR   = path.getabsolute("../../bgfx")
+BX_DIR     = path.getabsolute("../../bx")
 
 local BGFX_BUILD_DIR = path.join("../", "build")
 local BGFX_THIRD_PARTY_DIR = path.join(BGFX_DIR, "3rdparty")
@@ -95,8 +95,6 @@ function mainProject(name_)
 
 	files {
 		path.join(SRC_DIR, "main.cpp"),
-		path.join(SRC_DIR, "imguinodegrapheditor.cpp"),
-		path.join(SRC_DIR, "imguinodegrapheditor.h"),
 	}
 
 	links {

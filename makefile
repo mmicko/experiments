@@ -23,7 +23,7 @@ endif
 
 # $(info $(OS))
 
-BX_DIR?=3rdparty/bx
+BX_DIR?=../bx
 GENIE?=$(BX_DIR)/tools/bin/$(OS)/genie
 
 clean: ## Clean all intermediate files.
