@@ -2,6 +2,12 @@
 #include "common.h"
 #include "bgfx_utils.h"
 #include "entry/cmd.h"
+#include <experimental/filesystem>
+#include <string>       // std::string
+#include <iostream>     // std::cout
+#include <sstream>      // std::stringstream
+
+namespace fs = std::experimental::filesystem;
 
 class mainapp : public entry::AppI
 {
@@ -19,14 +25,14 @@ public:
 
 ENTRY_IMPLEMENT_MAIN(mainapp);
 
-
+#include <iostream>
 void mainapp::init(int _argc, char** _argv)
 {
 	Args args(_argc, _argv);
 
 	m_width  = 1280;
 	m_height = 720;
-	m_debug  = BGFX_DEBUG_NONE;
+	m_debug  = BGFX_DEBUG_TEXT;
 	m_reset  = BGFX_RESET_NONE;
 
 	// Disable commands from BGFX
@@ -63,6 +69,33 @@ bool mainapp::update()
 	{
 		bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height) );
 		bgfx::touch(0);
+		bgfx::dbgTextClear();
+		int i = 0;
+		for (auto& dirEntry : fs::directory_iterator(".."))
+		{
+			std::stringstream  ss;
+			ss << dirEntry.path().filename();			
+			
+			if (is_directory(dirEntry.path())) {
+				bgfx::dbgTextPrintf(0, i, 0x0f, "%-40s", ss.str().c_str());
+				i++;
+			}
+		}
+		i = 0;
+		for (auto& dirEntry : fs::directory_iterator("."))
+		{
+			std::stringstream  ss;
+			ss << dirEntry.path().filename();
+			
+			bgfx::dbgTextPrintf(40, i, 0x0f, "%-40s", ss.str().c_str());
+			if (is_directory(dirEntry.path())) {
+				bgfx::dbgTextPrintf(80, i, 0x03, "%10s", "<dir>");
+			}
+			else {
+				bgfx::dbgTextPrintf(80, i, 0x0f, "%10d", fs::file_size(dirEntry.path()));
+			}
+			i++;
+		}
 
 		bgfx::frame();
 		return true;

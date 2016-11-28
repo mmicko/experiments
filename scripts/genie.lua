@@ -83,6 +83,9 @@ function mainProject(name_)
 		uuid (os.uuid(name_))
 		kind "WindowedApp"
 
+	removeflags {
+		"NoExceptions",
+	} 
 	configuration {}
 
 	includedirs {
