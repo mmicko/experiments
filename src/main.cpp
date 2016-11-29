@@ -86,6 +86,10 @@ struct fileData
 class mainapp : public entry::AppI
 {
 public:
+	mainapp(): m_selected(0), m_width(0), m_height(0), m_debug(0), m_reset(0), m_text_width(0), m_text_height(0)
+	{
+	}
+
 	void init(int _argc, char** _argv) override;
 	virtual int shutdown() override;
 	bool update() override;	
