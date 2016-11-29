@@ -13,6 +13,61 @@
 #define ATTR_PRINTF(x,y)
 #endif
 
+bool get_full_path(std::string &dst, std::string const &path)
+{
+	try
+	{
+#if defined(WIN32)
+		std::vector<char> path_buffer(MAX_PATH);
+		if (::_fullpath(&path_buffer[0], path.c_str(), MAX_PATH))
+		{
+			dst = &path_buffer[0];
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+#else
+		std::unique_ptr<char, void(*)(void *)> canonical(::realpath(path.c_str(), nullptr), &std::free);
+		if (canonical)
+		{
+			dst = canonical.get();
+			return true;
+		}
+
+		std::vector<char> path_buffer(PATH_MAX);
+		if (::realpath(path.c_str(), &path_buffer[0]))
+		{
+			dst = &path_buffer[0];
+			return true;
+		}
+		else if (path[0] == PATHSEPCH)
+		{
+			dst = path;
+			return true;
+		}
+		else
+		{
+			while (!::getcwd(&path_buffer[0], path_buffer.size()))
+			{
+				if (errno != ERANGE)
+					return false;
+				else
+					path_buffer.resize(path_buffer.size() * 2);
+			}
+			dst.assign(&path_buffer[0]).push_back(PATHSEPCH);
+			dst.append(path);
+			return true;
+		}
+#endif
+	}
+	catch (...)
+	{
+		return false;
+	}
+}
+
 struct fileData
 {
 	std::string name;
@@ -27,7 +82,7 @@ public:
 
 	void updateFolder(std::string path);
 	void clearBuffer();
-	void bufferPrintf(uint16_t x, uint16_t y, uint8_t attrib, char const *format, ...) ATTR_PRINTF(2, 3);
+	void bufferPrintf(uint16_t x, uint16_t y, uint8_t attrib, char const *format, ...) ATTR_PRINTF(5, 6);
 	void bufferAttrib(uint16_t x, uint16_t y, uint8_t attrib, uint16_t w);
 	void checkKeyPress();
 	void keypressed(entry::Key::Enum key);
@@ -85,8 +140,8 @@ void mainapp::init(int _argc, char** _argv)
 		item = false;
 	for (auto& item : m_keyNumPress)
 		item = 0;
-	m_path = ".";
-	updateFolder(".");
+	get_full_path(m_path, ".");
+	updateFolder(m_path);
 }
 
 int mainapp::shutdown()
@@ -132,7 +187,6 @@ void mainapp::bufferAttrib(uint16_t x, uint16_t y, uint8_t attrib, uint16_t w)
 
 void mainapp::updateFolder(std::string path)
 {
-	m_path = path;
 	m_filelist.clear();
 	DIR* dir = opendir(path.c_str());
 	if (NULL != dir)
@@ -146,6 +200,7 @@ void mainapp::updateFolder(std::string path)
 		}
 		closedir(dir);
 	}
+	
 }
 
 void mainapp::clearBuffer()
@@ -171,7 +226,9 @@ void mainapp::keypressed(entry::Key::Enum key)
 	if (key == entry::Key::Return) {
 		if (m_filelist.size()> 0 && m_filelist[m_selected].isDirectory)
 		{
-			updateFolder(m_filelist[m_selected].name);
+			get_full_path(m_path, m_filelist[m_selected].name);
+			updateFolder(m_path);
+			
 			m_selected = 0;
 		}
 	}
