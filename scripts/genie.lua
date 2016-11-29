@@ -1,24 +1,3 @@
---
--- Copyright 2010-2016 Branimir Karadzic. All rights reserved.
--- License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
---
-
-newoption {
-	trigger = "with-sdl",
-	description = "Enable SDL entry.",
-}
-
-newoption {
-	trigger = "with-glfw",
-	description = "Enable GLFW entry.",
-}
-
-newoption {
-	trigger = "with-profiler",
-	description = "Enable build with intrusive profiler.",
-}
-
-
 solution "experiments"
 	configurations {
 		"Debug",
@@ -33,13 +12,31 @@ solution "experiments"
 		platforms {
 			"x32",
 			"x64",
---			"Xbox360",
 			"Native", -- for targets where bitness is not specified
 		}
 	end
 
-	language "C++"
-	startproject "experiments"
+language "C++"
+startproject "experiments"
+
+-- Big project specific
+premake.make.makefile_ignore = true
+premake._checkgenerate = false
+premake.check_paths = true
+
+msgcompile ("Compiling $(subst ../,,$<)...")
+
+msgcompile_objc ("Objective-C compiling $(subst ../,,$<)...")
+
+msgresource ("Compiling resources $(subst ../,,$<)...")
+
+msglinking ("Linking $(notdir $@)...")
+
+msgarchiving ("Archiving $(notdir $@)...")
+
+msgprecompile ("Precompiling $(subst ../,,$<)...")
+
+messageskip { "SkipCreatingMessage", "SkipBuildingMessage", "SkipCleaningMessage" }
 
 MODULE_DIR = path.getabsolute("../")
 SRC_DIR = path.getabsolute("../src")
@@ -61,28 +58,15 @@ end
 function copyLib()
 end
 
-if _OPTIONS["with-sdl"] then
-	if os.is("windows") then
-		if not os.getenv("SDL2_DIR") then
-			print("Set SDL2_DIR enviroment variable.")
-		end
-	end
-end
-
-if _OPTIONS["with-profiler"] then
-	defines {
-		"ENTRY_CONFIG_PROFILER=1",
-		"BGFX_CONFIG_PROFILER_REMOTERY=1",
-        "_WINSOCKAPI_"
-	}
-end
-
 function mainProject(name_)
 
 	project (name_)
 		uuid (os.uuid(name_))
 		kind "WindowedApp"
 
+	targetdir(MODULE_DIR)
+	targetsuffix ""
+	
 	removeflags {
 		"NoExceptions",
 	} 
@@ -104,53 +88,6 @@ function mainProject(name_)
 		"bgfx",
 		"example-common",
 	}
-
-	if _OPTIONS["with-sdl"] then
-		defines { "ENTRY_CONFIG_USE_SDL=1" }
-		links   { "SDL2" }
-
-		configuration { "osx" }
-			libdirs { "$(SDL2_DIR)/lib" }
-
-		configuration {}
-	end
-
-	if _OPTIONS["with-glfw"] then
-		defines { "ENTRY_CONFIG_USE_GLFW=1" }
-		links   { "glfw3" }
-
-		configuration { "linux or freebsd" }
-			links {
-				"Xrandr",
-				"Xinerama",
-				"Xi",
-				"Xxf86vm",
-				"Xcursor",
-			}
-
-		configuration { "osx" }
-			linkoptions {
-				"-framework CoreVideo",
-				"-framework IOKit",
-			}
-
-		configuration {}
-	end
-
-	configuration { "vs*", "x32 or x64" }
-		linkoptions {
-			"/ignore:4199", -- LNK4199: /DELAYLOAD:*.dll ignored; no imports found from *.dll
-		}
-		links { -- this is needed only for testing with GLES2/3 on Windows with VS2008
-			"DelayImp",
-		}
-
-	configuration { "vs201*", "x32 or x64" }
-		linkoptions { -- this is needed only for testing with GLES2/3 on Windows with VS201x
-			"/DELAYLOAD:\"libEGL.dll\"",
-			"/DELAYLOAD:\"libGLESv2.dll\"",
-		}
-
 	configuration { "mingw*" }
 		targetextension ".exe"
 		links {
@@ -167,62 +104,10 @@ function mainProject(name_)
 	configuration { "mingw-clang" }
 		kind "ConsoleApp"
 
-	configuration { "android*" }
-		kind "ConsoleApp"
-		targetextension ".so"
-		linkoptions {
-			"-shared",
-		}
-		links {
-			"EGL",
-			"GLESv2",
-		}
-
-	configuration { "nacl*" }
-		kind "ConsoleApp"
-		targetextension ".nexe"
-		links {
-			"ppapi",
-			"ppapi_gles2",
-			"pthread",
-		}
-
-	configuration { "pnacl" }
-		kind "ConsoleApp"
-		targetextension ".pexe"
-		links {
-			"ppapi",
-			"ppapi_gles2",
-			"pthread",
-		}
-
-	configuration { "asmjs" }
-		kind "ConsoleApp"
-		targetextension ".bc"
-
-	configuration { "linux-* or freebsd", "not linux-steamlink" }
+	configuration { "linux-*" }
 		links {
 			"X11",
 			"GL",
-			"pthread",
-		}
-
-	configuration { "linux-steamlink" }
-		links {
-			"EGL",
-			"GLESv2",
-			"SDL2",
-			"pthread",
-		}
-
-	configuration { "rpi" }
-		links {
-			"X11",
-			"GLESv2",
-			"EGL",
-			"bcm_host",
-			"vcos",
-			"vchiq_arm",
 			"pthread",
 		}
 
