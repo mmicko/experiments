@@ -26,6 +26,8 @@ endif
 BX_DIR?=../bx
 GENIE?=$(BX_DIR)/tools/bin/$(OS)/genie
 
+.PHONY: clean projgen build help
+
 clean: ## Clean all intermediate files.
 	@echo Cleaning...
 	-@rm -rf build
@@ -37,6 +39,7 @@ projgen: ## Generate project files for all configurations.
 	$(GENIE) --gcc=linux-gcc gmake
 	$(GENIE) --gcc=osx gmake
 
+.PHONY: build/projects/gmake-linux
 build/projects/gmake-linux:
 	$(GENIE) --gcc=linux-gcc gmake
 linux-debug32: build/projects/gmake-linux ## Build - Linux x86 Debug
@@ -49,18 +52,7 @@ linux-release64: build/projects/gmake-linux ## Build - Linux x64 Release
 	$(MAKE) -R -C build/projects/gmake-linux config=release64
 linux: linux-debug32 linux-release32 linux-debug64 linux-release64 ## Build - Linux x86/x64 Debug and Release
 
-build/projects/gmake-freebsd:
-	$(GENIE) --gcc=freebsd gmake
-freebsd-debug32: build/projects/gmake-freebsd ## Build - FreeBSD x86 Debug
-	$(MAKE) -R -C build/projects/gmake-freebsd config=debug32
-freebsd-release32: build/projects/gmake-freebsd ## Build - FreeBSD x86 Release
-	$(MAKE) -R -C build/projects/gmake-freebsd config=release32
-freebsd-debug64: build/projects/gmake-freebsd ## Build - FreeBSD x86 Debug
-	$(MAKE) -R -C build/projects/gmake-freebsd config=debug64
-freebsd-release64: build/projects/gmake-freebsd ## Build - FreeBSD x86 Release
-	$(MAKE) -R -C build/projects/gmake-freebsd config=release64
-freebsd: freebsd-debug32 freebsd-release32 freebsd-debug64 freebsd-release64 ## Build - FreeBSD x86/x64 Debug and Release
-
+.PHONY: build/projects/gmake-mingw-gcc
 build/projects/gmake-mingw-gcc:
 	$(GENIE) --gcc=mingw-gcc gmake
 mingw-gcc-debug32: build/projects/gmake-mingw-gcc ## Build - MinGW GCC x86 Debug
@@ -73,30 +65,7 @@ mingw-gcc-release64: build/projects/gmake-mingw-gcc ## Build - MinGW GCC x64 Rel
 	$(MAKE) -R -C build/projects/gmake-mingw-gcc config=release64
 mingw-gcc: mingw-gcc-debug32 mingw-gcc-release32 mingw-gcc-debug64 mingw-gcc-release64 ## Build - MinGW GCC x86/x64 Debug and Release
 
-build/projects/gmake-mingw-clang:
-	$(GENIE) --gcc=mingw-clang gmake
-mingw-clang-debug32: build/projects/gmake-mingw-clang ## Build - MinGW Clang x86 Debug
-	$(MAKE) -R -C build/projects/gmake-mingw-clang config=debug32
-mingw-clang-release32: build/projects/gmake-mingw-clang ## Build - MinGW Clang x86 Release
-	$(MAKE) -R -C build/projects/gmake-mingw-clang config=release32
-mingw-clang-debug64: build/projects/gmake-mingw-clang ## Build - MinGW Clang x64 Debug
-	$(MAKE) -R -C build/projects/gmake-mingw-clang config=debug64
-mingw-clang-release64: build/projects/gmake-mingw-clang ## Build - MinGW Clang x64 Release
-	$(MAKE) -R -C build/projects/gmake-mingw-clang config=release64
-mingw-clang: mingw-clang-debug32 mingw-clang-release32 mingw-clang-debug64 mingw-clang-release64 ## Build - MinGW Clang x86/x64 Debug and Release
-
-build/projects/vs2013:
-	$(GENIE) vs2013
-vs2013-debug32: build/projects/vs2013 ## Build - VS2013 x86 Debug
-	devenv build/projects/vs2013/bgfx.sln /Build "Debug|Win32"
-vs2013-release32: build/projects/vs2013 ## Build - VS2013 x86 Release
-	devenv build/projects/vs2013/bgfx.sln /Build "Release|Win32"
-vs2013-debug64: build/projects/vs2013 ## Build - VS2013 x64 Debug
-	devenv build/projects/vs2013/bgfx.sln /Build "Debug|x64"
-vs2013-release64: build/projects/vs2013 ## Build - VS2013 x64 Release
-	devenv build/projects/vs2013/bgfx.sln /Build "Release|x64"
-vs2013: vs2013-debug32 vs2013-release32 vs2013-debug64 vs2013-release64 ## Build - VS2013 x86/x64 Debug and Release
-
+.PHONY: build/projects/vs2015
 build/projects/vs2015:
 	$(GENIE) vs2015
 vs2015-debug32: build/projects/vs2015 ## Build - VS2015 x86 Debug
@@ -109,6 +78,7 @@ vs2015-release64: build/projects/vs2015 ## Build - VS2015 x64 Release
 	devenv build/projects/vs2015/bgfx.sln /Build "Release|x64"
 vs2015: vs2015-debug32 vs2015-release32 vs2015-debug64 vs2015-release64 ## Build - VS2015 x86/x64 Debug and Release
 
+.PHONY: build/projects/gmake-osx
 build/projects/gmake-osx:
 	$(GENIE) --gcc=osx gmake
 osx-debug32: build/projects/gmake-osx ## Build - OSX x86 Debug
