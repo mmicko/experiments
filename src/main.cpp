@@ -231,6 +231,20 @@ void mainapp::keypressed(entry::Key::Enum key)
 	if (key == entry::Key::Down) {
 		if (m_selected < m_filelist.size()-1 && m_filelist.size()> 0) m_selected++;
 	}
+	if (key == entry::Key::Home) {
+		m_selected = 0;
+	}
+	if (key == entry::Key::End) {
+		if (m_filelist.size() > 0) m_selected = uint16_t(m_filelist.size() - 1); else m_selected = 0;
+	}
+	if (key == entry::Key::PageUp) {
+		if (m_selected > 10) m_selected -= 10; else m_selected = 0;
+	}
+	if (key == entry::Key::PageDown) {
+		m_selected+= 10;
+		if (m_filelist.empty()) m_selected = 0;
+		if (m_selected > m_filelist.size()-1) m_selected = uint16_t(m_filelist.size() - 1);
+	}
 	if (key == entry::Key::Return) {
 		if (m_filelist.size()> 0 && m_filelist[m_selected].isDirectory)
 		{
