@@ -3,40 +3,26 @@ solution "experiments"
 		"Debug",
 		"Release",
 	}
-
-	if _ACTION == "xcode4" then
-		platforms {
-			"Universal",
-		}
-	else
-		platforms {
-			"x32",
-			"x64",
-			"Native", -- for targets where bitness is not specified
-		}
-	end
+	platforms {
+		"x32",
+		"x64",
+	}
 
 language "C++"
 startproject "experiments"
 
--- Big project specific
+-- BEGIN GENie configuration
 premake.make.makefile_ignore = true
 premake._checkgenerate = false
 premake.check_paths = true
-
 msgcompile ("Compiling $(subst ../,,$<)...")
-
 msgcompile_objc ("Objective-C compiling $(subst ../,,$<)...")
-
 msgresource ("Compiling resources $(subst ../,,$<)...")
-
 msglinking ("Linking $(notdir $@)...")
-
 msgarchiving ("Archiving $(notdir $@)...")
-
 msgprecompile ("Precompiling $(subst ../,,$<)...")
-
 messageskip { "SkipCreatingMessage", "SkipBuildingMessage", "SkipCleaningMessage" }
+-- END GENie configuration
 
 MODULE_DIR = path.getabsolute("../")
 SRC_DIR = path.getabsolute("../src")
@@ -58,72 +44,6 @@ end
 function copyLib()
 end
 
-function mainProject(name_)
-
-	project (name_)
-		uuid (os.uuid(name_))
-		kind "WindowedApp"
-
-	targetdir(MODULE_DIR)
-	targetsuffix ""
-	
-	removeflags {
-		"NoExceptions",
-	} 
-	configuration {}
-
-	includedirs {
-		path.join(BX_DIR,   "include"),
-		path.join(BGFX_DIR, "include"),
-		path.join(BGFX_DIR, "3rdparty"),
-		path.join(BGFX_DIR, "examples/common"),
-		path.join(SRC_DIR,  ""),
-	}
-
-	files {
-		path.join(SRC_DIR, "main.cpp"),
-	}
-
-	links {
-		"bgfx",
-		"example-common",
-	}
-	configuration { "mingw*" }
-		targetextension ".exe"
-		links {
-			"gdi32",
-			"psapi",
-		}
-
-	configuration { "vs20*", "x32 or x64" }
-		links {
-			"gdi32",
-			"psapi",
-		}
-
-	configuration { "mingw-clang" }
-		kind "ConsoleApp"
-
-	configuration { "linux-*" }
-		links {
-			"X11",
-			"GL",
-			"pthread",
-		}
-
-	configuration { "osx" }
-		linkoptions {
-			"-framework Cocoa",
-			"-framework QuartzCore",
-			"-framework OpenGL",
-			"-weak_framework Metal",
-		}
-
-	configuration {}
-
-	strip()
-end
-
 dofile (path.join(BGFX_DIR, "scripts", "bgfx.lua"))
 
 group "common"
@@ -133,5 +53,77 @@ group "libs"
 bgfxProject("", "StaticLib", {})
 
 group "main"
-mainProject("experiments")
+
+-- MAIN Project
+project ("experiments")
+	uuid (os.uuid("experiments"))
+	kind "WindowedApp"
+
+targetdir(MODULE_DIR)
+targetsuffix ""
+
+removeflags {
+	"NoExceptions",
+} 
+configuration {}
+
+includedirs {
+	path.join(BX_DIR,   "include"),
+	path.join(BGFX_DIR, "include"),
+	path.join(BGFX_DIR, "3rdparty"),
+	path.join(BGFX_DIR, "examples/common"),
+	path.join(SRC_DIR,  ""),
+}
+
+files {
+	path.join(SRC_DIR, "main.cpp"),
+}
+if _ACTION == "gmake" then
+	removebuildoptions_cpp {
+		"-std=c++11",
+	}
+	buildoptions_cpp {
+		"-x c++",
+		"-std=c++14",
+	}
+end
+
+links {
+	"bgfx",
+	"example-common",
+}
+configuration { "mingw*" }
+	targetextension ".exe"
+	links {
+		"gdi32",
+		"psapi",
+	}
+
+configuration { "vs20*", "x32 or x64" }
+	links {
+		"gdi32",
+		"psapi",
+	}
+
+configuration { "mingw-clang" }
+	kind "ConsoleApp"
+
+configuration { "linux-*" }
+	links {
+		"X11",
+		"GL",
+		"pthread",
+	}
+
+configuration { "osx" }
+	linkoptions {
+		"-framework Cocoa",
+		"-framework QuartzCore",
+		"-framework OpenGL",
+		"-weak_framework Metal",
+	}
+
+configuration {}
+
+strip()
 

@@ -68,18 +68,6 @@ mingw-gcc-release64: build/projects/gmake-mingw-gcc ## Build - MinGW GCC x64 Rel
 	$(SILENT)$(MAKE) -R -C build/projects/gmake-mingw-gcc config=release64
 mingw-gcc: mingw-gcc-debug32 mingw-gcc-release32 mingw-gcc-debug64 mingw-gcc-release64 ## Build - MinGW GCC x86/x64 Debug and Release
 
-.PHONY: build/projects/vs2015
-build/projects/vs2015:
-	$(SILENT)$(GENIE) vs2015
-vs2015-debug32: build/projects/vs2015 ## Build - VS2015 x86 Debug
-	devenv build/projects/vs2015/bgfx.sln /Build "Debug|Win32"
-vs2015-release32: build/projects/vs2015 ## Build - VS2015 x86 Release
-	devenv build/projects/vs2015/bgfx.sln /Build "Release|Win32"
-vs2015-debug64: build/projects/vs2015 ## Build - VS2015 x64 Debug
-	devenv build/projects/vs2015/bgfx.sln /Build "Debug|x64"
-vs2015-release64: build/projects/vs2015 ## Build - VS2015 x64 Release
-	devenv build/projects/vs2015/bgfx.sln /Build "Release|x64"
-
 .PHONY: build/projects/gmake-osx
 build/projects/gmake-osx:
 	$(SILENT)$(GENIE) --gcc=osx gmake
