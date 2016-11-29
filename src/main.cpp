@@ -111,7 +111,7 @@ private:
 	char m_temp_buffer[8192];
 
 	bool m_keyState[entry::Key::Count];
-	uint8_t m_keyNumPress[entry::Key::Count];
+	uint16_t m_keyNumPress[entry::Key::Count];
 };
 
 ENTRY_IMPLEMENT_MAIN(mainapp);
@@ -256,7 +256,8 @@ void mainapp::checkKeyPress()
 		}
 		if (oldpressed == true && pressed == true) { // Key being pressed
 			m_keyNumPress[ii]++;
-			if (m_keyNumPress[ii] == 0) { // 256 means holding too long
+			if (m_keyNumPress[ii] == 1024) { // means holding too long
+				m_keyNumPress[ii] = 0;
 				m_keyState[ii] = false;
 				keypressed(entry::Key::Enum(ii));
 			}

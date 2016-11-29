@@ -13,7 +13,7 @@ startproject "experiments"
 
 -- BEGIN GENie configuration
 premake.make.makefile_ignore = true
-premake._checkgenerate = false
+--premake._checkgenerate = false
 premake.check_paths = true
 msgcompile ("Compiling $(subst ../,,$<)...")
 msgcompile_objc ("Objective-C compiling $(subst ../,,$<)...")
