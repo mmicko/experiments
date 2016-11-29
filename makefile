@@ -17,12 +17,9 @@ endif
 endif
 else
 OS=windows
-
-all: build
-
 endif
 
-# $(info $(OS))
+all: build
 
 BX_DIR?=../bx
 GENIE?=$(BX_DIR)/tools/bin/$(OS)/genie

@@ -6,6 +6,14 @@
 #include <dirent.h> 
 #include <vector>
 #include <string>
+#include <memory>
+
+#if defined(WIN32)
+constexpr char PATHSEPCH = '\\';
+#else
+constexpr char PATHSEPCH = '/';
+#include <unistd.h>
+#endif
 
 #if defined(__GNUC__)
 #define ATTR_PRINTF(x,y)        __attribute__((format(printf, x, y)))
