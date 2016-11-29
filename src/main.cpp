@@ -6,6 +6,7 @@
 #include <dirent.h> 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #if defined(WIN32)
 constexpr char PATHSEPCH = '\\';
@@ -210,7 +211,9 @@ void mainapp::updateFolder(std::string path)
 		}
 		closedir(dir);
 	}
-	
+	std::sort(m_filelist.begin(), m_filelist.end(), [](fileData a, fileData b) {
+        return a.name < b.name;   
+    });	
 }
 
 void mainapp::clearBuffer()
