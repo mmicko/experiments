@@ -6,12 +6,12 @@
 #include <dirent.h> 
 #include <vector>
 #include <string>
-#include <memory>
 
 #if defined(WIN32)
 constexpr char PATHSEPCH = '\\';
 #else
 constexpr char PATHSEPCH = '/';
+#include <memory>
 #include <unistd.h>
 #endif
 
@@ -79,6 +79,7 @@ bool get_full_path(std::string &dst, std::string const &path)
 struct fileData
 {
 	std::string name;
+	std::string fullpath;
 	bool isDirectory;
 };
 class mainapp : public entry::AppI
@@ -203,8 +204,9 @@ void mainapp::updateFolder(std::string path)
 		{
 			fileData fd;
 			fd.name = std::string(item->d_name);
+			fd.fullpath = path + PATHSEPCH + fd.name;
 			fd.isDirectory = (item->d_type & DT_DIR)!=0;
-			m_filelist.push_back(fd);
+			if (fd.name!=".") m_filelist.push_back(fd);
 		}
 		closedir(dir);
 	}
@@ -248,7 +250,7 @@ void mainapp::keypressed(entry::Key::Enum key)
 	if (key == entry::Key::Return) {
 		if (m_filelist.size()> 0 && m_filelist[m_selected].isDirectory)
 		{
-			get_full_path(m_path, m_filelist[m_selected].name);
+			get_full_path(m_path, m_filelist[m_selected].fullpath);
 			updateFolder(m_path);
 			
 			m_selected = 0;
@@ -260,7 +262,7 @@ void mainapp::keypressed(entry::Key::Enum key)
 
 void mainapp::checkKeyPress()
 {
-	for (int32_t ii = 0; ii < (int32_t)entry::Key::Count; ++ii)
+	for (int32_t ii = 0; ii < int32_t(entry::Key::Count); ++ii)
 	{
 		bool oldpressed = m_keyState[ii];
 		bool pressed = inputGetKeyState(entry::Key::Enum(ii));
