@@ -13,6 +13,11 @@
 #define ATTR_PRINTF(x,y)
 #endif
 
+struct fileData
+{
+	std::string name;
+	bool isDirectory;
+};
 class mainapp : public entry::AppI
 {
 public:
@@ -20,14 +25,15 @@ public:
 	virtual int shutdown() override;
 	bool update() override;	
 
-	void updateFolder();
+	void updateFolder(std::string path);
 	void clearBuffer();
 	void bufferPrintf(uint16_t x, uint16_t y, uint8_t attrib, char const *format, ...) ATTR_PRINTF(2, 3);
 	void bufferAttrib(uint16_t x, uint16_t y, uint8_t attrib, uint16_t w);
 	void checkKeyPress();
 	void keypressed(entry::Key::Enum key);
 private:
-	std::vector<std::string> m_filelist;
+	std::vector<fileData> m_filelist;
+	std::string m_path;
 	uint16_t m_selected;
 	uint32_t m_width;
 	uint32_t m_height;
@@ -37,6 +43,7 @@ private:
 
 	uint16_t m_text_width;
 	uint16_t m_text_height;
+
 	std::vector<uint8_t> m_buffer;
 	char m_temp_buffer[8192];
 
@@ -78,7 +85,8 @@ void mainapp::init(int _argc, char** _argv)
 		item = false;
 	for (auto& item : m_keyNumPress)
 		item = 0;
-	updateFolder();
+	m_path = ".";
+	updateFolder(".");
 }
 
 int mainapp::shutdown()
@@ -122,29 +130,20 @@ void mainapp::bufferAttrib(uint16_t x, uint16_t y, uint8_t attrib, uint16_t w)
 	}
 }
 
-void mainapp::updateFolder()
+void mainapp::updateFolder(std::string path)
 {
-	std::string path = ".";
+	m_path = path;
 	m_filelist.clear();
-	DIR* dir = opendir(".");
-
-	if (NULL == dir)
-	{
-		path = ".";
-	}
-	int i = 0;
-	dir = opendir(path.c_str());
+	DIR* dir = opendir(path.c_str());
 	if (NULL != dir)
 	{
 		for (dirent* item = readdir(dir); NULL != item; item = readdir(dir))
 		{
-			//if (0 == (item->d_type & DT_DIR))
-			{
-				m_filelist.push_back(std::string(item->d_name));
-				i++;
-			}
+			fileData fd;
+			fd.name = std::string(item->d_name);
+			fd.isDirectory = (item->d_type & DT_DIR)!=0;
+			m_filelist.push_back(fd);
 		}
-
 		closedir(dir);
 	}
 }
@@ -167,7 +166,16 @@ void mainapp::keypressed(entry::Key::Enum key)
 		if (m_selected > 0) m_selected--;
 	}
 	if (key == entry::Key::Down) {
-		if (m_selected < m_filelist.size()-1) m_selected++;
+		if (m_selected < m_filelist.size()-1 && m_filelist.size()> 0) m_selected++;
+	}
+	if (key == entry::Key::Return) {
+		if (m_filelist.size()> 0 && m_filelist[m_selected].isDirectory)
+		{
+			updateFolder(m_filelist[m_selected].name);
+			m_selected = 0;
+		}
+	}
+	if (key == entry::Key::Esc) {
 	}
 }
 
@@ -205,13 +213,16 @@ bool mainapp::update()
 		bgfx::touch(0);
 		clearBuffer();
 		
-		int pos = 0;
+		bufferPrintf(0, 0, 0x0f, "%s", m_path.c_str());
+		int pos = 1;
 		for (const auto entry : m_filelist)
 		{
-			bufferPrintf(0, pos, 0x0f, "%-40s", entry.c_str());
+			bufferPrintf(0, pos, 0x0f, "%-40s", entry.name.c_str());
+			if (entry.isDirectory)
+				bufferPrintf(40, pos, 0x03, "<dir>");
 			pos++;
 		}
-		bufferAttrib(0, m_selected, 0x40, 80);
+		bufferAttrib(0, m_selected+1, 0x40, 80);
 		bgfx::dbgTextImage(0, 0, m_text_width, m_text_height, m_buffer.data(), m_text_width*2);
 
 		bgfx::frame();
