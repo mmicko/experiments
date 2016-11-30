@@ -6,6 +6,7 @@
 #include <dirent.h> 
 #include <vector>
 #include <string>
+#include <chrono>
 #include <algorithm>
 
 #if defined(WIN32)
@@ -77,6 +78,8 @@ bool get_full_path(std::string &dst, std::string const &path)
 	}
 }
 
+typedef std::chrono::time_point<std::chrono::high_resolution_clock> timepoint_type;
+typedef std::chrono::high_resolution_clock clock_type;
 struct fileData
 {
 	std::string name;
@@ -117,7 +120,8 @@ private:
 	char m_temp_buffer[8192];
 
 	bool m_keyState[entry::Key::Count];
-	uint16_t m_keyNumPress[entry::Key::Count];
+	timepoint_type m_keyTimePress[entry::Key::Count];
+	clock_type m_clock;
 };
 
 ENTRY_IMPLEMENT_MAIN(mainapp);
@@ -152,8 +156,7 @@ void mainapp::init(int _argc, char** _argv)
 
 	for (auto& item : m_keyState)
 		item = false;
-	for (auto& item : m_keyNumPress)
-		item = 0;
+
 	get_full_path(m_path, ".");
 	updateFolder(m_path);
 }
@@ -274,19 +277,17 @@ void mainapp::checkKeyPress()
 		bool oldpressed = m_keyState[ii];
 		bool pressed = inputGetKeyState(entry::Key::Enum(ii));
 		if (oldpressed == false && pressed == true) { // Key pressed
-			m_keyNumPress[ii] = 0;
+			m_keyTimePress[ii] = m_clock.now();
 			m_keyState[ii] = true;
 		}
 		if (oldpressed == true && pressed == true) { // Key being pressed
-			m_keyNumPress[ii]++;
-			if (m_keyNumPress[ii] == 1024) { // means holding too long
-				m_keyNumPress[ii] = 0;
+			auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(m_clock.now() - m_keyTimePress[ii]);
+			if (elapsed.count() > 150) { // 150ms
 				m_keyState[ii] = false;
 				keypressed(entry::Key::Enum(ii));
 			}
 		}
 		if (oldpressed == true && pressed == false) { // Key released
-			m_keyNumPress[ii] = 0;
 			m_keyState[ii] = false;
 			keypressed(entry::Key::Enum(ii));
 		}
