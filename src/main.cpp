@@ -1,13 +1,13 @@
+#include <vector>
+#include <string>
+#include <chrono>
+#include <algorithm>
 #include <bx/uint32_t.h>
 #include "common.h"
 #include "bgfx_utils.h"
 #include "entry/cmd.h"
 #include "entry/input.h"
 #include <dirent.h> 
-#include <vector>
-#include <string>
-#include <chrono>
-#include <algorithm>
 
 #if defined(WIN32)
 constexpr char PATHSEPCH = '\\';
