@@ -80,37 +80,44 @@ bool get_full_path(std::string &dst, std::string const &path)
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> timepoint_type;
 typedef std::chrono::high_resolution_clock clock_type;
+
 struct fileData
 {
 	std::string name;
 	std::string fullpath;
 	bool isDirectory;
 };
+
 class mainapp : public entry::AppI
 {
 public:
-	mainapp(): m_selected(0), m_width(0), m_height(0), m_debug(0), m_reset(0), m_text_width(0), m_text_height(0)
+	mainapp(): m_panel(0), m_width(0), m_height(0), m_debug(0), m_reset(0), m_text_width(0), m_text_height(0)
 	{
 	}
 
 	void init(int _argc, char** _argv) override;
-	virtual int shutdown() override;
+	int shutdown() override;
 	bool update() override;	
 
-	void updateFolder(std::string path);
+	void updateFolder(std::vector<fileData> &filelist, std::string path);
 	void clearBuffer();
 	void bufferPrintf(uint16_t x, uint16_t y, uint8_t attrib, char const *format, ...) ATTR_PRINTF(5, 6);
 	void bufferAttrib(uint16_t x, uint16_t y, uint8_t attrib, uint16_t w);
 	void checkKeyPress();
 	void keypressed(entry::Key::Enum key);
+	void displayPanel(int num, uint16_t posx, uint16_t width, uint16_t height);
 private:
-	std::vector<fileData> m_filelist;
-	std::string m_path;
-	uint16_t m_selected;
+	std::vector<fileData> m_filelist[2];
+	std::string m_path[2];
+	uint16_t m_selected[2];
+	
+	uint8_t m_panel;
+
 	uint32_t m_width;
 	uint32_t m_height;
 	uint32_t m_debug;
 	uint32_t m_reset;
+
 	entry::MouseState m_mouseState;
 
 	uint16_t m_text_width;
@@ -134,7 +141,9 @@ void mainapp::init(int _argc, char** _argv)
 	m_height = 720;
 	m_debug  = BGFX_DEBUG_TEXT;
 	m_reset  = BGFX_RESET_NONE;
-	m_selected = 0;
+	m_selected[0] = 0;
+	m_selected[1] = 0;
+	m_panel = 0;
 
 	// Disable commands from BGFX
 	cmdShutdown();
@@ -157,8 +166,10 @@ void mainapp::init(int _argc, char** _argv)
 	for (auto& item : m_keyState)
 		item = false;
 
-	get_full_path(m_path, ".");
-	updateFolder(m_path);
+	get_full_path(m_path[0], ".");
+	get_full_path(m_path[1], ".");
+	updateFolder(m_filelist[0],m_path[0]);
+	updateFolder(m_filelist[1],m_path[1]);
 }
 
 int mainapp::shutdown()
@@ -188,7 +199,6 @@ void mainapp::bufferPrintf(uint16_t x, uint16_t y, uint8_t attrib, const char *f
 	}
 }
 
-
 void mainapp::bufferAttrib(uint16_t x, uint16_t y, uint8_t attrib, uint16_t w)
 {
 	if (x < m_text_width && y < m_text_height)
@@ -202,9 +212,9 @@ void mainapp::bufferAttrib(uint16_t x, uint16_t y, uint8_t attrib, uint16_t w)
 	}
 }
 
-void mainapp::updateFolder(std::string path)
+void mainapp::updateFolder(std::vector<fileData> &filelist, std::string path)
 {
-	m_filelist.clear();
+	filelist.clear();
 	DIR* dir = opendir(path.c_str());
 	if (NULL != dir)
 	{
@@ -214,11 +224,11 @@ void mainapp::updateFolder(std::string path)
 			fd.name = std::string(item->d_name);
 			fd.fullpath = path + PATHSEPCH + fd.name;
 			fd.isDirectory = (item->d_type & DT_DIR)!=0;
-			if (fd.name!=".") m_filelist.push_back(fd);
+			if (fd.name!=".") filelist.push_back(fd);
 		}
 		closedir(dir);
 	}
-	std::sort(m_filelist.begin(), m_filelist.end(), [](fileData a, fileData b) {
+	std::sort(filelist.begin(), filelist.end(), [](fileData a, fileData b) {
         return a.name < b.name;   
     });	
 }
@@ -238,35 +248,36 @@ void mainapp::clearBuffer()
 void mainapp::keypressed(entry::Key::Enum key)
 {
 	if (key == entry::Key::Up) {
-		if (m_selected > 0) m_selected--;
+		if (m_selected[m_panel] > 0) m_selected[m_panel]--;
 	}
 	if (key == entry::Key::Down) {
-		if (m_selected < m_filelist.size()-1 && m_filelist.size()> 0) m_selected++;
+		if (m_selected[m_panel] < m_filelist[m_panel].size()-1 && m_filelist[m_panel].size()> 0) m_selected[m_panel]++;
 	}
 	if (key == entry::Key::Home) {
-		m_selected = 0;
+		m_selected[m_panel] = 0;
 	}
 	if (key == entry::Key::End) {
-		if (m_filelist.size() > 0) m_selected = uint16_t(m_filelist.size() - 1); else m_selected = 0;
+		if (m_filelist[m_panel].size() > 0) m_selected[m_panel] = uint16_t(m_filelist[m_panel].size() - 1); else m_selected[m_panel] = 0;
 	}
 	if (key == entry::Key::PageUp) {
-		if (m_selected > 10) m_selected -= 10; else m_selected = 0;
+		if (m_selected[m_panel] > 10) m_selected[m_panel] -= 10; else m_selected[m_panel] = 0;
 	}
 	if (key == entry::Key::PageDown) {
-		m_selected+= 10;
-		if (m_filelist.empty()) m_selected = 0;
-		if (m_selected > m_filelist.size()-1) m_selected = uint16_t(m_filelist.size() - 1);
+		m_selected[m_panel] += 10;
+		if (m_filelist[m_panel].empty()) m_selected[m_panel] = 0;
+		if (m_selected[m_panel] > m_filelist[m_panel].size()-1) m_selected[m_panel] = uint16_t(m_filelist[m_panel].size() - 1);
 	}
 	if (key == entry::Key::Return) {
-		if (m_filelist.size()> 0 && m_filelist[m_selected].isDirectory)
+		if (m_filelist[m_panel].size()> 0 && m_filelist[m_panel][m_selected[m_panel]].isDirectory)
 		{
-			get_full_path(m_path, m_filelist[m_selected].fullpath);
-			updateFolder(m_path);
+			get_full_path(m_path[m_panel], m_filelist[m_panel][m_selected[m_panel]].fullpath);
+			updateFolder(m_filelist[m_panel],m_path[m_panel]);
 			
-			m_selected = 0;
+			m_selected[m_panel] = 0;
 		}
 	}
-	if (key == entry::Key::Esc) {
+	if (key == entry::Key::Tab) {
+		m_panel = m_panel == 1 ? 0 : 1;
 	}
 }
 
@@ -294,6 +305,27 @@ void mainapp::checkKeyPress()
 	}
 }
 
+void mainapp::displayPanel(int num, uint16_t posx, uint16_t width, uint16_t height)
+{
+	int posy = 1;
+	bufferPrintf(posx, 0, 0x0f, "%s", m_path[num].c_str());
+	int startndx = 0;
+	int endndx = std::min(uint16_t(m_filelist[num].size()),height);
+	if (m_selected[num] > height) {
+		startndx = m_selected[num] - height;
+		endndx -= height;
+	}	
+	for (int i=startndx;i<endndx;i++)
+	{
+		auto entry = m_filelist[num][i];
+		bufferPrintf(posx, posy, 0x0f, "%s", entry.name.c_str());
+		if (entry.isDirectory)
+			bufferPrintf(posx+ width - 7, posy, 0x03, "<dir>");
+		posy++;
+	}
+	if (m_panel == num) bufferAttrib(posx, m_selected[num] + 1, 0x40, width);
+}
+
 bool mainapp::update()
 {
 	checkKeyPress();
@@ -302,17 +334,8 @@ bool mainapp::update()
 		bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height) );
 		bgfx::touch(0);
 		clearBuffer();
-		
-		bufferPrintf(0, 0, 0x0f, "%s", m_path.c_str());
-		int pos = 1;
-		for (const auto entry : m_filelist)
-		{
-			bufferPrintf(0, pos, 0x0f, "%-40s", entry.name.c_str());
-			if (entry.isDirectory)
-				bufferPrintf(40, pos, 0x03, "<dir>");
-			pos++;
-		}
-		bufferAttrib(0, m_selected+1, 0x40, 80);
+		displayPanel(0, 0 , m_text_width /2, m_text_height -2);
+		displayPanel(1, m_text_width / 2, m_text_width /2, m_text_height -2);
 		bgfx::dbgTextImage(0, 0, m_text_width, m_text_height, m_buffer.data(), m_text_width*2);
 
 		bgfx::frame();
